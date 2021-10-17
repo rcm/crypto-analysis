@@ -6,8 +6,21 @@
 0.04025 0.02406 0.06749 0.07507 0.01929 0.00095 0.05987 0.06327 0.09056 0.02758 0.00978 
 0.02360 0.00150 0.01974 0.00074])
 
+
+(defn letter-to-pos
+  [letter] (- (int letter) 65))
+
+(defn pos-to-letter
+  [pos] (char (+ 65 pos)))
+  
+(defn rot26
+  [x n] (mod (+ x n) 26))
+  
+(defn rotate-letter
+  [letter n] (-> letter letter-to-pos (rot26 n) pos-to-letter))  
+
 (def all-uppercase-letters
-  (map #(char (+ 65 %)) (range 26)))
+  (map pos-to-letter (range 26)))
 
 (defn chi-squared
   "compute the chi square statistic from the list of all letter couunts"
@@ -35,10 +48,10 @@
   (->> (-> phrase compute-frequencies) ((fn [counts] (map #(get counts % 0) all-uppercase-letters)))))
 
 (defn substitute-cypher
-  ""
+  "Substitution Cypher"
   [phrase alphabet]
   (let
-    [dict (into {} (map-indexed #(vector (char (+ 65 %1)) %2) (-> alphabet clojure.string/upper-case seq)))]
+    [dict (into {} (map-indexed #(vector (pos-to-letter %1) %2) (-> alphabet clojure.string/upper-case seq)))]
     (apply str (map dict (-> phrase clojure.string/upper-case get-letters seq)))))
 
 (defn caesar
@@ -48,20 +61,20 @@
   n: the offset to use
   "
   [phrase n]
-  (apply str (map #(char (+ 65 (mod (- (+ (int %) n) 65) 26))) (seq phrase))))
+  (apply str (map #(rotate-letter % n) (seq phrase))))
 
 (defn caesar-chi-sq
   "Performs the brute force attack using the chi-squared statistic"
   [phrase]
   (apply min-key #(-> % get-full-counts chi-squared) (map #(caesar phrase %)  (range 26)))
 )
-
+  
 (defn order-by-counts
   "Order letters by their frequency/counts"
   [counts]
-  (map #(char (+ 65 (first %))) (sort-by last > (map-indexed #(vector %1 %2) counts))))
+  (-> (map #(vector (pos-to-letter %) (last %)) (sort-by last > (map-indexed #(vector %1 %2) counts)))))
 
-(def rand-txt (substitute-cypher "to be or not to be, that is the question" (apply str (shuffle (map #(char (+ 65 %)) (range 26))))))
+(def rand-txt (substitute-cypher "to be or not to be, that is the question" (apply str (shuffle all-uppercase-letters))))
 
 (defn -main
   "Main program that takes the texts as arguments"
