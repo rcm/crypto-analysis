@@ -44,6 +44,7 @@
      (-> phrase get-letters frequencies))
 
 (defn get-full-counts
+  "Returns a vector with the counts for all the letters in the alphabet"
   [phrase]
   (->> (-> phrase compute-frequencies) ((fn [counts] (map #(get counts % 0) all-uppercase-letters)))))
 
