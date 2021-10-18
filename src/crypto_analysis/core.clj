@@ -72,7 +72,7 @@
 (defn order-by-counts
   "Order letters by their frequency/counts"
   [counts]
-  (-> (map #(vector (pos-to-letter %) (last %)) (sort-by last > (map-indexed #(vector %1 %2) counts)))))
+  (-> (map #(vector (pos-to-letter (first %)) (last %)) (sort-by last > (map-indexed vector counts)))))
 
 (def rand-txt (substitute-cypher "to be or not to be, that is the question" (apply str (shuffle all-uppercase-letters))))
 
