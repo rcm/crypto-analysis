@@ -38,10 +38,18 @@
   [phrase]
   (-> phrase clojure.string/upper-case (clojure.string/replace #"[^A-Z]" "")))
 
+
 (defn compute-frequencies
   "Compute the frequencies of each letter"
   [phrase]
-     (-> phrase get-letters frequencies))
+  (-> phrase get-letters frequencies))
+
+(defn compute-digraphs
+  "Compute the digraph frequencies"
+  [phrase]
+  (let
+    [letters (get-letters phrase)]
+	(frequencies (map str letters (rest letters)))))
 
 (defn get-full-counts
   "Returns a vector with the counts for all the letters in the alphabet"
@@ -69,12 +77,17 @@
   [phrase]
   (apply min-key #(-> % get-full-counts chi-squared) (map #(caesar phrase %)  (range 26)))
 )
-  
+
 (defn order-by-counts
   "Order letters by their frequency/counts"
   [counts]
   (-> (map #(vector (pos-to-letter (first %)) (last %)) (sort-by last > (map-indexed vector counts)))))
 
+
+(defn naive-subst-attack
+  [cypher-text]
+  (->> (map #(map first (vector %1 %2)) (-> cypher-text get-full-counts  order-by-counts ) (-> english order-by-counts )) (sort-by first) (map last) (apply str)))
+  
 (def rand-txt (substitute-cypher "to be or not to be, that is the question" (apply str (shuffle all-uppercase-letters))))
 
 (defn -main
